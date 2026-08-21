@@ -1,0 +1,26 @@
+<svg width="900" height="900" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Macho Ayomide logo</title>
+  <desc id="desc">Macho Ayomide brand mark with dark navy and orange colors.</desc>
+  <rect width="900" height="900" fill="white"/>
+  <g transform="translate(200 145)">
+    <path d="M198 58C214 4 298 4 314 58" stroke="#242832" stroke-width="22" stroke-linecap="round"/>
+    <path d="M120 126L250 52L250 305L118 350L120 126Z" fill="#252932"/>
+    <path d="M250 52L383 126L390 350L250 305V52Z" fill="#111827"/>
+    <path d="M252 152L394 86L415 337L252 391V152Z" fill="#FF6500"/>
+    <path d="M107 126L252 206V391L91 338L107 126Z" fill="#262A33"/>
+    <path d="M151 216L251 278L354 215V372L252 411L151 371V216Z" fill="white"/>
+    <path d="M151 216L251 278L354 215V300L251 362L151 299V216Z" fill="#FF6500"/>
+    <path d="M151 216L251 278L354 215V266L251 328L151 266V216Z" fill="white"/>
+    <path d="M66 338C172 403 385 376 515 253" stroke="#FF6500" stroke-width="24" stroke-linecap="round"/>
+    <path d="M503 198L558 188L535 241L503 198Z" fill="#FF6500"/>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" font-weight="900">
+    <text x="66" y="635" font-size="72" letter-spacing="-2" fill="#242832">MACHO</text>
+    <text x="432" y="635" font-size="72" letter-spacing="-2" fill="#FF6500">AYOMIDE</text>
+  </g>
+  <rect x="164" y="680" width="222" height="7" rx="3.5" fill="#242832"/>
+  <circle cx="450" cy="683.5" r="7.5" fill="#FF6500"/>
+  <rect x="514" y="680" width="222" height="7" rx="3.5" fill="#FF6500"/>
+  <text x="117" y="738" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="10" fill="#242832">BUILDING STORES. DRIVING REAL</text>
+  <text x="642" y="738" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="10" fill="#FF6500">REVENUE.</text>
+</svg>
