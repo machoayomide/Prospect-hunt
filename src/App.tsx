@@ -357,7 +357,7 @@ function Hero() {
               <img
                 src="/images/hero-photo.png"
                 alt="Macho Ayomide"
-                className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 object-contain object-bottom drop-shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+                className="absolute bottom-2 left-1/2 h-[33rem] w-auto -translate-x-1/2 drop-shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
               />
               <div className="absolute left-16 top-20 h-3 w-3 rounded-full bg-blue-400 shadow-[0_0_38px_rgba(59,130,246,0.9)]" />
               <div className="absolute bottom-24 right-20 h-4 w-4 rounded-full bg-[#F4C542] shadow-[0_0_38px_rgba(244,197,66,0.8)]" />
