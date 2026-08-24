@@ -328,14 +328,6 @@ function Hero() {
 
       <div className="mx-auto grid min-h-[calc(100vh-6rem)] max-w-7xl items-center gap-12 px-4 pb-16 sm:px-6 lg:grid-cols-[1.04fr_0.96fr] lg:px-8">
         <Reveal className="max-w-3xl">
-          <div className="mb-8 flex items-center gap-4">
-            <Logo size="large" />
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.22em] text-[#F4C542]">Macho Ayomide</p>
-              <p className="mt-1 text-sm font-medium text-[#A7B0C0]">Akure, Ondo State, Nigeria</p>
-            </div>
-          </div>
-
           <p className="mb-4 text-sm font-bold uppercase tracking-[0.25em] text-blue-300">Entrepreneur / Freelancer / Digital Skills / Personal Growth</p>
           <h1 className="max-w-4xl text-5xl font-black leading-[0.92] tracking-[-0.06em] text-white sm:text-6xl lg:text-7xl xl:text-8xl">
             BUILD YOURSELF. <span className="block text-[#F4C542]">BUILD ANOTHER SOURCE OF INCOME.</span>
@@ -362,8 +354,11 @@ function Hero() {
             <div className="hero-mark relative h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.22),transparent_60%)]">
               <div className="absolute inset-14 rounded-full border border-white/10" />
               <div className="absolute inset-24 rounded-full border border-[#F4C542]/18" />
-              <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-[34%] bg-white/6 shadow-[0_0_120px_rgba(59,130,246,0.23)] backdrop-blur-sm" />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[55%] text-[15rem] font-black leading-none tracking-[-0.12em] text-white/90">M</span>
+              <img
+                src="/images/hero-photo.png"
+                alt="Macho Ayomide"
+                className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 object-contain object-bottom drop-shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+              />
               <div className="absolute left-16 top-20 h-3 w-3 rounded-full bg-blue-400 shadow-[0_0_38px_rgba(59,130,246,0.9)]" />
               <div className="absolute bottom-24 right-20 h-4 w-4 rounded-full bg-[#F4C542] shadow-[0_0_38px_rgba(244,197,66,0.8)]" />
               <div className="absolute right-20 top-16 h-20 w-20 rotate-12 border border-white/15" />
