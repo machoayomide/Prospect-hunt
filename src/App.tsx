@@ -6,12 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 const FACEBOOK_LINK = "https://www.facebook.com/ayomideolalekanmacho";
 const WHATSAPP_LINK = "https://wa.link/w6j4g9";
-const WHATSAPP_NUMBER = "2349160956794"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
+const WHATSAPP_NUMBER = "2348000000000"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
 
 // Backend endpoint for Telegram notifications.
 // Deploy the included telegram server and put the URL here.
 // NEVER put your bot token in this frontend file.
-const TELEGRAM_ENDPOINT = "https://macho-notify.pages.dev";
+const TELEGRAM_ENDPOINT = ""; // e.g. "https://your-server.com/notify"
 
 function buildWhatsAppLink(details?: { name: string; whatsapp: string; location: string; role: string }) {
   const msg = details
@@ -147,18 +147,45 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
    ══════════════════════════════════════════════════════════ */
 
 function BannedScreen() {
+  const state = loadState();
+  const reason = state.banReason || "";
+
+  const isActiveMember = reason === "active_member";
+  const isQuit = reason === "quit_reason_submitted";
+  const isNotInterested = reason.startsWith("not_interested");
+
+  let heading = "Thank you for your time.";
+  let message = "We appreciate your visit.";
+
+  if (isActiveMember) {
+    heading = "Thank you for your time.";
+    message = "Since you're already active in the business, this website was designed for new people exploring the opportunity for the first time. We wish you the best on your journey — keep pushing.";
+  } else if (isQuit) {
+    heading = "Thank you for your feedback.";
+    message = "We appreciate you sharing your experience. We're always working to improve, and your feedback helps. We wish you the best going forward.";
+  } else if (isNotInterested) {
+    heading = "No problem at all.";
+    message = "We understand it's not for everyone. If you ever change your mind in the future, you're always welcome to reach out to Macho directly.";
+  }
+
   return (
     <div className="banned-bg flex min-h-screen items-center justify-center px-6 text-center text-white">
       <div>
         <Logo size="large" className="mx-auto mb-8" />
-        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Thank you for your time.</h1>
-        <p className="mx-auto mt-4 max-w-md text-lg text-[#A7B0C0]">
-          This page is designed for new people exploring the opportunity for the first time. We appreciate your visit.
-        </p>
-        <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer"
-          className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/7 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/12">
-          <Icon name="facebook" className="h-5 w-5" /> Follow Macho on Facebook
-        </a>
+        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{heading}</h1>
+        <p className="mx-auto mt-4 max-w-md text-lg text-[#A7B0C0]">{message}</p>
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/7 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/12">
+            <Icon name="facebook" className="h-5 w-5" /> Follow Macho on Facebook
+          </a>
+          {isNotInterested && (
+            <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/7 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/12">
+              <Icon name="whatsapp" className="h-5 w-5" /> Message Macho on WhatsApp
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
