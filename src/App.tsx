@@ -6,12 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 const FACEBOOK_LINK = "https://www.facebook.com/ayomideolalekanmacho";
 const WHATSAPP_LINK = "https://wa.link/w6j4g9";
-const WHATSAPP_NUMBER = "2349160956794"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
+const WHATSAPP_NUMBER = "2349160956794";
 
 // Backend endpoint for Telegram notifications.
 // Deploy the included telegram server and put the URL here.
 // NEVER put your bot token in this frontend file.
-const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/notify"; // e.g. "https://your-server.com/notify"
+const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/notify";
 
 function buildWhatsAppLink(details?: { name: string; whatsapp: string; location: string; role: string }) {
   const msg = details
@@ -867,7 +867,7 @@ export default function App() {
     saveState(s);
     setProspectState(s);
     setDetailsOpen(false);
-    sendTelegram("details_submitted", { ...d, collectedBy: detailsShownCount === 1 ? "first_popup" : detailsShownCount === 2 ? "second_popup" : "gateway_required" });
+    sendTelegram("details_submitted", { details: d, collectedBy: detailsShownCount === 1 ? "first_popup" : detailsShownCount === 2 ? "second_popup" : "gateway_required" });
   }, [prospectState, detailsShownCount]);
 
   const handleDetailsNeeded = useCallback(() => {
