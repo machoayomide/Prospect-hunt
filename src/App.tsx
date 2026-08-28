@@ -6,12 +6,19 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 const FACEBOOK_LINK = "https://www.facebook.com/ayomideolalekanmacho";
 const WHATSAPP_LINK = "https://wa.link/w6j4g9";
-const SECOND_SITE_LINK = "#"; // TODO: Replace with your actual second website URL
+const WHATSAPP_NUMBER = "2348000000000"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
 
 // Backend endpoint for Telegram notifications.
-// Deploy the included telegram worker and put the URL here.
+// Deploy the included telegram server and put the URL here.
 // NEVER put your bot token in this frontend file.
-const TELEGRAM_ENDPOINT = ""; // e.g. "https://your-worker.workers.dev/notify"
+const TELEGRAM_ENDPOINT = ""; // e.g. "https://your-server.com/notify"
+
+function buildWhatsAppLink(details?: { name: string; whatsapp: string; location: string; role: string }) {
+  const msg = details
+    ? `Hi Macho, I just went through your website and I'm interested in learning more about the opportunity.\n\nName: ${details.name}\nLocation: ${details.location}\nI'm a: ${details.role}\nMy WhatsApp: ${details.whatsapp}`
+    : "Hi Macho, I just went through your website and I'm interested in learning more about the opportunity.";
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
 
 const STORAGE_KEY = "macho_prospect";
 
@@ -91,9 +98,13 @@ function getDeviceId(): string {
 
 function cn(...c: Array<string | false | null | undefined>) { return c.filter(Boolean).join(" "); }
 
+// Logo: put your Macho Team logo at public/macho-team-logo.png (or .svg)
+// If still using the old logo, keep the old filename below
+const LOGO_PATH = "/macho-team-logo.png";
+
 function Logo({ size = "default", className = "" }: { size?: "small" | "default" | "large"; className?: string }) {
   return (
-    <img src="/macho-ayomide-logo.svg" alt="Macho Team logo"
+    <img src={LOGO_PATH} alt="Macho Team logo"
       className={cn("shrink-0 rounded-xl bg-white object-contain ring-1 ring-white/15",
         size === "small" && "h-10 w-10 p-1", size === "default" && "h-12 w-12 p-1.5", size === "large" && "h-20 w-20 p-2.5", className)}
       width={size === "large" ? 80 : size === "small" ? 40 : 48}
@@ -542,10 +553,10 @@ function InterestGateway({ state, setState, onDetailsNeeded }: {
     handleBan("quit_reason_submitted");
   };
 
-  const handleProceedToSite2 = () => {
+  const handleProceedToWhatsApp = () => {
     if (!state.detailsSubmitted) { onDetailsNeeded(); return; }
-    sendTelegram("proceeding_to_site2", {});
-    window.location.href = SECOND_SITE_LINK;
+    sendTelegram("proceeding_to_whatsapp", { details: state.details });
+    window.location.href = buildWhatsAppLink(state.details);
   };
 
   return (
@@ -618,9 +629,9 @@ function InterestGateway({ state, setState, onDetailsNeeded }: {
                 I've put together a clear breakdown of how everything works — the model, what you'd be doing, and what to expect. No pressure, just information.
               </p>
               <div className="mt-8 grid gap-4">
-                <button type="button" onClick={handleProceedToSite2}
-                  className="group flex min-h-14 items-center justify-center rounded-2xl bg-[#F4C542] px-6 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:-translate-y-0.5 hover:bg-[#ffd866]">
-                  Yes, show me how it works <Icon name="arrow" className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
+                <button type="button" onClick={handleProceedToWhatsApp}
+                  className="group flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#F4C542] px-6 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:-translate-y-0.5 hover:bg-[#ffd866]">
+                  <Icon name="whatsapp" className="h-5 w-5" /> Yes, let's talk on WhatsApp
                 </button>
                 <GatewayButton onClick={() => { setStep("exit-soft"); handleBan("not_interested_never_heard"); }} variant="muted">
                   No, I'm not interested
@@ -639,9 +650,9 @@ function InterestGateway({ state, setState, onDetailsNeeded }: {
                 Different teams run things differently. I've put together a proper explanation of how we do things at Macho Team — it might be different from what you've seen before.
               </p>
               <div className="mt-8 grid gap-4">
-                <button type="button" onClick={handleProceedToSite2}
-                  className="group flex min-h-14 items-center justify-center rounded-2xl bg-[#F4C542] px-6 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:-translate-y-0.5 hover:bg-[#ffd866]">
-                  Yes, I'm interested <Icon name="arrow" className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
+                <button type="button" onClick={handleProceedToWhatsApp}
+                  className="group flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#F4C542] px-6 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:-translate-y-0.5 hover:bg-[#ffd866]">
+                  <Icon name="whatsapp" className="h-5 w-5" /> Yes, let's talk on WhatsApp
                 </button>
                 <GatewayButton onClick={() => { setStep("exit-soft"); handleBan("not_interested_heard_before"); }} variant="muted">
                   No, not this time
@@ -848,6 +859,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0B1220] font-sans text-white selection:bg-[#F4C542] selection:text-[#0B1220]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+
+      {/* Fixed background photo — stays visible faintly while scrolling */}
+      {/* Replace /images/macho-photo.jpg with your actual photo path */}
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+        <img src="/images/macho-photo.jpg" alt="" className="h-full w-full object-cover object-top opacity-[0.04]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B1220]/60 via-transparent to-[#0B1220]/80" />
+      </div>
+
       <ScrollProgress />
       <Navbar />
       <main>
