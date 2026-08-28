@@ -6,12 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 const FACEBOOK_LINK = "https://www.facebook.com/ayomideolalekanmacho";
 const WHATSAPP_LINK = "https://wa.link/w6j4g9";
-const WHATSAPP_NUMBER = "2348000000000"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
+const WHATSAPP_NUMBER = "2349160956794"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
 
 // Backend endpoint for Telegram notifications.
 // Deploy the included telegram server and put the URL here.
 // NEVER put your bot token in this frontend file.
-const TELEGRAM_ENDPOINT = ""; // e.g. "https://your-server.com/notify"
+const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/"; // e.g. "https://your-server.com/notify"
 
 function buildWhatsAppLink(details?: { name: string; whatsapp: string; location: string; role: string }) {
   const msg = details
