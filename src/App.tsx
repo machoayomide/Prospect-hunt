@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 const FACEBOOK_LINK = "https://www.facebook.com/ayomideolalekanmacho";
 const WHATSAPP_LINK = "https://wa.link/w6j4g9";
-const WHATSAPP_NUMBER = "2348000000000"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
+const WHATSAPP_NUMBER = "2349160956794"; // TODO: Replace with your actual WhatsApp number (with country code, no +)
 
 // Backend endpoint for Telegram notifications.
 // Deploy the included telegram server and put the URL here.
