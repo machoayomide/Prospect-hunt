@@ -11,7 +11,7 @@ const WHATSAPP_NUMBER = "2349160956794"; // TODO: Replace with your actual Whats
 // Backend endpoint for Telegram notifications.
 // Deploy the included telegram server and put the URL here.
 // NEVER put your bot token in this frontend file.
-const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/"; // e.g. "https://your-server.com/notify"
+const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/notify"; // e.g. "https://your-server.com/notify"
 
 function buildWhatsAppLink(details?: { name: string; whatsapp: string; location: string; role: string }) {
   const msg = details
