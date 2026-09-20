@@ -369,8 +369,8 @@ function Story() {
         <Reveal delay={80}>
           <div className="mt-12 space-y-7 text-lg leading-9 text-[#D4DAE5] sm:text-xl sm:leading-10">
             <p>
-              I was a fashion designer apprentice. Two years learning tailoring — I could sew almost any style of clothes.
-              I was also trying to get into FUTA. On paper, I was on a path.
+              I was a fashion designer apprentice. Three years learning tailoring — I could sew almost any style of clothes.
+              I was also trying to get into FUTA. It looked like i was doing the right thing - what my mates are doing.
             </p>
             <p>But then I looked at my boss — the person whose level I was working towards — and I asked myself one honest question:</p>
           </div>
@@ -378,23 +378,29 @@ function Story() {
 
         <Reveal delay={120} variant="scale">
           <blockquote className="gold-glow my-12 rounded-3xl border-l-4 border-[#F4C542] bg-[#0B1220] p-8 text-2xl font-black leading-snug tracking-[-0.02em] text-white sm:p-10 sm:text-3xl">
-            "Can this path actually get me to where I want to be? Can I hit ₦1 million? ₦10 million? Can people see me and say — that person is building something?"
+            "Can this path actually get me to where I want to be? Can I even make enough money to sustain myself not to talk of my family? or is it that i will keep struggling to earn or to make endsmeet?"
           </blockquote>
         </Reveal>
 
+         <Reveal delay={140} variant="scale">
+          <blockquote className="gold-glow my-12 rounded-3xl border-l-4 border-[#F4C542] bg-[#0B1220] p-8 text-2xl font-black leading-snug tracking-[-0.02em] text-white sm:p-10 sm:text-3xl">
+            "Most of this thought is about my future, My parent may be feeding and clothing me now but will they do that forever?"
+          </blockquote>
+        </Reveal>
+         
         <Reveal delay={160}>
           <div className="space-y-7 text-lg leading-9 text-[#D4DAE5] sm:text-xl sm:leading-10">
-            <p>The honest answer was no. Not with what I was doing.</p>
+            <p>I thought about this for long and The honest answer was no.</p>
             <p>
               Then my elder brother introduced me to a business opportunity. I didn't fully understand it at first — he just told me what I could gain.
-              But when I got in and it was properly explained to me, I saw something that made sense.
+              But when I got in and it was properly explained to me, I saw it as something that made sense.
             </p>
             <p>
               I saw a system where <strong className="text-white">my work input determines my income output.</strong> I could structure how much I wanted to earn.
               I could build skills that people pay real money for. And I could build a business alongside it.
             </p>
             <p>
-              Today, I have over 5 digital skills — website design, app development, graphic design, AI tools, and more.
+              Today, I have over 5 digital skills — website design, app development, graphic design, AI automation, and more.
               I earn from my skills. I build with a team. And I can see a real path forward.
             </p>
           </div>
@@ -512,7 +518,7 @@ function OfferTeaser() {
               <p className="mb-3 text-sm font-black uppercase tracking-[0.2em] text-blue-300">Side 1</p>
               <h3 className="text-2xl font-black tracking-tight">Learn a digital skill</h3>
               <p className="mt-4 text-lg leading-8 text-[#A7B0C0]">
-                Get trained in a real skill. Build your profile. Find clients. Get paid. Access the global market — not just your local area.
+                Get trained in a real skill. Build your profile. Find clients. Get paid. Access the global market — not just Nigeria.
               </p>
             </div>
           </Reveal>
@@ -529,8 +535,8 @@ function OfferTeaser() {
 
         <Reveal delay={200}>
           <p className="mt-12 text-lg leading-8 text-[#A7B0C0]">
-            The first side handles your present. The second side builds your future.<br />
-            Your output determines your income — nothing is guaranteed, but the structure is real.
+            The first side handles your today. The second side builds your future.<br />
+            One important thing, your work determines your income — nothing is guaranteed, but the structure is real.
           </p>
         </Reveal>
       </div>
@@ -651,9 +657,9 @@ function InterestGateway({ state, setState, onDetailsNeeded }: {
         {step === "never-heard" && (
           <Reveal>
             <div className="mt-10 rounded-3xl border border-white/10 bg-[#151E2E] p-8 sm:p-10">
-              <h3 className="text-2xl font-black tracking-tight">Would you like a brief explanation?</h3>
+              <h3 className="text-2xl font-black tracking-tight">Would you be open to a short explanation?</h3>
               <p className="mt-3 text-lg text-[#A7B0C0]">
-                I've put together a clear breakdown of how everything works — the model, what you'd be doing, and what to expect. No pressure, just information.
+                I've put together a clear breakdown of how everything works — the model, what you'd be doing, and what to expect.
               </p>
               <div className="mt-8 grid gap-4">
                 <button type="button" onClick={handleProceedToWhatsApp}
