@@ -1,4 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type FormEvent } from "react";
+import { NIGERIA_LGAS, NIGERIA_STATES } from "./data/nigeria-locations";
+
+interface ProspectDetails {
+  name: string;
+  whatsapp: string;
+  location: string;
+  role: string;
+  state?: string;
+  lga?: string;
+  exactLocation?: string;
+  isStudent?: boolean;
+}
 
 /* ══════════════════════════════════════════════════════════
    CONFIG — update these before deploying
@@ -13,10 +25,16 @@ const WHATSAPP_NUMBER = "2349160956794";
 // NEVER put your bot token in this frontend file.
 const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/notify";
 
-function buildWhatsAppLink(details?: { name: string; whatsapp: string; location: string; role: string }) {
-  const msg = details
-    ? `Hi Macho, I just went through your website and I'm interested in learning more about the opportunity.\n\nName: ${details.name}\nLocation: ${details.location}\nI'm a: ${details.role}\nMy WhatsApp: ${details.whatsapp}`
-    : "Hi Macho, I just went through your website and I'm interested in learning more about the opportunity.";
+function buildWhatsAppLink(details?: ProspectDetails) {
+  const intro = "Hi Macho, I'd like the details of Macho Team's digital-skills training and business programme.";
+  if (!details) return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(intro)}`;
+  const locationLines = details.state && details.lga && details.exactLocation
+    ? `State: ${details.state}\nLGA / area council: ${details.lga}\nExact location: ${details.exactLocation}`
+    : `Location: ${details.location}`;
+  const studentLine = typeof details.isStudent === "boolean"
+    ? `Student: ${details.isStudent ? "Yes" : "No"}`
+    : `Role: ${details.role}`;
+  const msg = `${intro}\n\nName: ${details.name}\n${locationLines}\n${studentLine}\nMy WhatsApp: ${details.whatsapp}`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -31,7 +49,7 @@ interface ProspectState {
   banReason?: string;
   choiceLocked?: "never-heard" | "heard-before" | "already-member";
   detailsSubmitted: boolean;
-  details?: { name: string; whatsapp: string; location: string; role: string };
+  details?: ProspectDetails;
   quitReason?: string;
   memberStatus?: "active" | "quit";
   sessionCount: number;
@@ -68,13 +86,19 @@ function banDevice(reason: string) {
    TELEGRAM — send events to your bot via backend
    ══════════════════════════════════════════════════════════ */
 
-async function sendTelegram(event: string, data: Record<string, unknown> = {}) {
-  if (!TELEGRAM_ENDPOINT) return;
+async function sendTelegram(
+  event: string,
+  data: Record<string, unknown> = {},
+  options: { signal?: AbortSignal; keepalive?: boolean } = {},
+): Promise<boolean> {
+  if (!TELEGRAM_ENDPOINT) return false;
   try {
     const state = loadState();
-    await fetch(TELEGRAM_ENDPOINT, {
+    const response = await fetch(TELEGRAM_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: options.signal,
+      keepalive: options.keepalive,
       body: JSON.stringify({
         event,
         timestamp: new Date().toISOString(),
@@ -83,13 +107,34 @@ async function sendTelegram(event: string, data: Record<string, unknown> = {}) {
         ...data,
       }),
     });
-  } catch {}
+    if (!response.ok) return false;
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      const text = await response.text();
+      const result: unknown = text.trim() ? JSON.parse(text) : null;
+      if (result && typeof result === "object") {
+        if (("ok" in result && result.ok === false) || ("success" in result && result.success === false)) return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
+let temporaryDeviceId: string | undefined;
+
 function getDeviceId(): string {
-  let id = localStorage.getItem("macho_did");
-  if (!id) { id = crypto.randomUUID?.() || Math.random().toString(36).slice(2); localStorage.setItem("macho_did", id); }
-  return id;
+  try {
+    let id = localStorage.getItem("macho_did");
+    if (!id) {
+      id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+      localStorage.setItem("macho_did", id);
+    }
+    return id;
+  } catch {
+    temporaryDeviceId ??= crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+    return temporaryDeviceId;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -212,81 +257,144 @@ function ScrollProgress() {
    DETAILS MODAL — collects name, whatsapp, location, role
    ══════════════════════════════════════════════════════════ */
 
-function DetailsModal({ open, onClose, onSubmit, canSkip = true }: {
-  open: boolean; onClose: () => void;
-  onSubmit: (d: { name: string; whatsapp: string; location: string; role: string }) => void;
+function DetailsModal({ open, onClose, onSubmit, canSkip = true, submitting, error }: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (details: ProspectDetails) => Promise<void>;
   canSkip?: boolean;
+  submitting: boolean;
+  error: string;
 }) {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [location, setLocation] = useState("");
-  const [role, setRole] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [lga, setLga] = useState("");
+  const [exactLocation, setExactLocation] = useState("");
+  const [student, setStudent] = useState<"" | "yes" | "no">("");
+  const formRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => { if (open) document.body.style.overflow = "hidden"; else document.body.style.overflow = ""; return () => { document.body.style.overflow = ""; }; }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.body.style.overflow = "hidden";
+    formRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && canSkip && !submitting) onClose();
+      if (event.key !== "Tab") return;
+      const controls = Array.from(formRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]',
+      ) ?? []).filter(control => control.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKey);
+      previousFocus?.focus();
+    };
+  }, [open, canSkip, submitting, onClose]);
+
   if (!open) return null;
 
-  const valid = name.trim() && whatsapp.trim() && location.trim() && role;
-  const submit = () => { if (valid) onSubmit({ name: name.trim(), whatsapp: whatsapp.trim(), location: location.trim(), role }); };
+  const lgas = NIGERIA_LGAS[selectedState] ?? [];
+  const phoneDigits = whatsapp.replace(/\D/g, "");
+  const valid = name.trim().length >= 2
+    && phoneDigits.length >= 10 && phoneDigits.length <= 15
+    && !!selectedState && lgas.includes(lga)
+    && exactLocation.trim().length >= 2
+    && student !== "";
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!valid || submitting) return;
+    const address = exactLocation.trim();
+    void onSubmit({
+      name: name.trim(),
+      whatsapp: whatsapp.trim(),
+      state: selectedState,
+      lga,
+      exactLocation: address,
+      isStudent: student === "yes",
+      // Keep the existing fields readable by the deployed notification Worker.
+      location: `${address}, ${lga}, ${selectedState}`,
+      role: student === "yes" ? "Student" : "Not a student",
+    });
+  };
+  const inputClass = "w-full rounded-xl border border-white/15 bg-[#0B1220] px-4 py-3.5 text-white placeholder:text-[#A7B0C0]/60 focus:border-[#F4C542]/50 focus:outline-none focus:ring-1 focus:ring-[#F4C542]/30 disabled:opacity-50";
+  const labelClass = "mb-1.5 block text-sm font-bold text-white";
 
   return (
-    <div className="modal-overlay fixed inset-0 z-[70] flex items-end justify-center sm:items-center" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={canSkip ? onClose : undefined} />
-      <div className="modal-panel relative max-h-[92svh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[#111827] p-6 shadow-2xl sm:rounded-3xl sm:p-8">
+    <div className="modal-overlay fixed inset-0 z-[70] flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="details-title" aria-describedby="details-description">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={canSkip && !submitting ? onClose : undefined} />
+      <form ref={formRef} onSubmit={submit} aria-busy={submitting} className="modal-panel relative max-h-[92svh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[#111827] p-6 shadow-2xl sm:rounded-3xl sm:p-8">
         {canSkip && (
-          <button type="button" onClick={onClose} className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-white transition hover:bg-white/15" aria-label="Close">
+          <button type="button" onClick={onClose} disabled={submitting} className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-white transition hover:bg-white/15 disabled:opacity-50" aria-label="Close details form">
             <Icon name="close" className="h-5 w-5" />
           </button>
         )}
-
-        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4C542]/15 text-[#F4C542]">
-          <Icon name="user" className="h-6 w-6" />
-        </div>
-        <h3 className="mt-3 pr-10 text-2xl font-black tracking-tight text-white">Before we continue</h3>
-        <p className="mt-2 text-base text-[#A7B0C0]">
-          Tell me a bit about yourself so I know how to help you best.
+        <h3 id="details-title" className="pr-10 text-2xl font-black tracking-tight text-white">Get the class details</h3>
+        <p id="details-description" className="mt-2 text-base leading-7 text-[#A7B0C0]">
+          Tell Muhammed where you are based and whether you are a student. Your details will be saved so he can contact you about the programme.
         </p>
+        <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">Next, WhatsApp opens with your details filled in. Tap Send there to start the conversation.</p>
 
-        <div className="mt-6 space-y-4">
+        <fieldset disabled={submitting} className="mt-6 space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-bold text-white">Full name</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
-              className="w-full rounded-xl border border-white/15 bg-white/7 px-4 py-3.5 text-white placeholder:text-[#A7B0C0]/60 focus:border-[#F4C542]/50 focus:outline-none focus:ring-1 focus:ring-[#F4C542]/30" />
+            <label htmlFor="lead-name" className={labelClass}>Full name</label>
+            <input id="lead-name" name="name" type="text" autoComplete="name" required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} placeholder="Your name" className={inputClass} />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-bold text-white">WhatsApp number</label>
-            <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="e.g. 08012345678"
-              className="w-full rounded-xl border border-white/15 bg-white/7 px-4 py-3.5 text-white placeholder:text-[#A7B0C0]/60 focus:border-[#F4C542]/50 focus:outline-none focus:ring-1 focus:ring-[#F4C542]/30" />
+            <label htmlFor="lead-whatsapp" className={labelClass}>WhatsApp number</label>
+            <input id="lead-whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" required maxLength={25} value={whatsapp} onChange={event => setWhatsapp(event.target.value)} placeholder="e.g. 08012345678 or +2348012345678" className={inputClass} />
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-bold text-white">Location</label>
-            <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Akure, Ondo State"
-              className="w-full rounded-xl border border-white/15 bg-white/7 px-4 py-3.5 text-white placeholder:text-[#A7B0C0]/60 focus:border-[#F4C542]/50 focus:outline-none focus:ring-1 focus:ring-[#F4C542]/30" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-bold text-white">What best describes you?</label>
-            <div className="grid grid-cols-2 gap-2">
-              {["Student", "Employee", "Self-employed", "Job seeker"].map(r => (
-                <button key={r} type="button" onClick={() => setRole(r)}
-                  className={cn("rounded-xl border px-4 py-3 text-sm font-bold transition",
-                    role === r ? "border-[#F4C542] bg-[#F4C542]/15 text-[#F4C542]" : "border-white/12 bg-white/5 text-white hover:bg-white/10")}>
-                  {r}
-                </button>
-              ))}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="lead-state" className={labelClass}>State / FCT</label>
+              <select id="lead-state" name="state" autoComplete="address-level1" required value={selectedState} onChange={event => { setSelectedState(event.target.value); setLga(""); }} className={inputClass}>
+                <option value="">Select your state</option>
+                {NIGERIA_STATES.map(stateName => <option key={stateName} value={stateName}>{stateName === "Federal Capital Territory" ? "FCT (Abuja)" : stateName}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="lead-lga" className={labelClass}>LGA / area council</label>
+              <select id="lead-lga" name="lga" autoComplete="address-level2" required disabled={!selectedState || submitting} value={lga} onChange={event => setLga(event.target.value)} className={inputClass}>
+                <option value="">{selectedState ? "Select your LGA" : "Choose a state first"}</option>
+                {lgas.map(lgaName => <option key={lgaName} value={lgaName}>{lgaName}</option>)}
+              </select>
             </div>
           </div>
-        </div>
+          <div>
+            <label htmlFor="lead-exact-location" className={labelClass}>Exact location / nearest landmark</label>
+            <input id="lead-exact-location" name="exactLocation" type="text" autoComplete="street-address" required minLength={2} maxLength={240} value={exactLocation} onChange={event => setExactLocation(event.target.value)} placeholder="e.g. FUTA Southgate, near the main junction" className={inputClass} />
+            <p className="mt-1.5 text-xs leading-5 text-[#A7B0C0]">Enter your area, street or a nearby landmark.</p>
+          </div>
+          <fieldset>
+            <legend className={labelClass}>Are you a student?</legend>
+            <div className="grid grid-cols-2 gap-3">
+              {(["yes", "no"] as const).map(value => (
+                <label key={value} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-bold", student === value ? "border-[#F4C542] bg-[#F4C542]/15 text-[#F4C542]" : "border-white/15 text-white")}>
+                  <input name="student" type="radio" required value={value} checked={student === value} onChange={() => setStudent(value)} className="h-4 w-4 accent-[#F4C542]" />
+                  {value === "yes" ? "Yes" : "No"}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </fieldset>
 
-        <button type="button" onClick={submit} disabled={!valid}
-          className={cn("mt-6 flex w-full min-h-14 items-center justify-center rounded-2xl px-6 py-4 text-sm font-black uppercase tracking-widest transition",
-            valid ? "bg-[#F4C542] text-[#0B1220] hover:-translate-y-0.5 hover:bg-[#ffd866]" : "bg-white/10 text-white/40 cursor-not-allowed")}>
-          Continue
+        {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/40 bg-red-400/10 p-3 text-sm leading-6 text-red-200">{error}</p>}
+        <button type="submit" disabled={!valid || submitting} className={cn("mt-6 flex w-full min-h-14 items-center justify-center rounded-2xl px-6 py-4 text-sm font-black uppercase tracking-widest transition", valid && !submitting ? "bg-[#F4C542] text-[#0B1220] hover:bg-[#ffd866]" : "cursor-not-allowed bg-white/10 text-white/40")}>
+          {submitting ? "Saving your details…" : "Continue to WhatsApp"}
         </button>
-        {canSkip && (
-          <button type="button" onClick={onClose} className="mt-3 w-full py-3 text-sm font-semibold text-[#A7B0C0] transition hover:text-white">
-            I'll fill this in later
-          </button>
-        )}
-      </div>
+        {canSkip && <button type="button" onClick={onClose} disabled={submitting} className="mt-3 w-full py-3 text-sm font-semibold text-[#A7B0C0] transition hover:text-white disabled:opacity-50">Keep reading for now</button>}
+      </form>
     </div>
   );
 }
@@ -320,7 +428,7 @@ function Navbar() {
    HERO — full width, spacious
    ══════════════════════════════════════════════════════════ */
 
-function Hero() {
+function Hero({ onRequestDetails }: { onRequestDetails: () => void }) {
   return (
     <section id="home" className="relative isolate min-h-[100svh] overflow-hidden bg-[#0B1220] pt-20 text-white">
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.34),transparent_32%),radial-gradient(circle_at_85%_15%,rgba(244,197,66,0.18),transparent_27%),linear-gradient(135deg,#0B1220_0%,#111827_48%,#07101d_100%)]" />
@@ -331,18 +439,22 @@ function Hero() {
           <Logo size="large" className="gold-glow mx-auto mb-8" />
           <p className="mb-3 text-sm font-black uppercase tracking-[0.28em] text-[#F4C542]/90">Macho Team</p>
           <h1 className="mx-auto max-w-5xl text-[clamp(2.2rem,6vw,4.5rem)] font-black leading-[0.92] tracking-[-0.05em]">
-            You're working hard.<br />
-            <span className="text-[#F4C542]">But is it building the life you actually want?</span>
+            Learn digital skills.<br />
+            <span className="text-[#F4C542]">Explore the Macho Team programme.</span>
           </h1>
           <p className="mx-auto mt-8 max-w-2xl text-xl leading-9 text-[#D4DAE5]">
-            I asked myself that same question. Here's what I found — and why I think it could matter for you too.
+            Find out about website design, graphic design, video and AI tools. Our FHG programme combines freelance-skills training with a network-marketing business.
           </p>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#A7B0C0]">Ask about current session times, online or physical attendance, costs and membership requirements before you decide.</p>
+          <button type="button" onClick={onRequestDetails} className="mx-auto mt-8 inline-flex min-h-14 items-center justify-center rounded-2xl bg-[#F4C542] px-7 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:bg-[#ffd866]">
+            Get the class details
+          </button>
         </Reveal>
 
         <Reveal delay={200}>
           <button type="button" onClick={() => document.getElementById("story")?.scrollIntoView({ behavior: "smooth" })}
             className="mt-12 flex flex-col items-center gap-2 text-[#A7B0C0] transition hover:text-white">
-            <span className="text-sm font-bold uppercase tracking-[0.2em]">Scroll to begin</span>
+            <span className="text-sm font-bold uppercase tracking-[0.2em]">Read how it works</span>
             <Icon name="down" className="scroll-pulse h-6 w-6" />
           </button>
         </Reveal>
@@ -503,12 +615,11 @@ function OfferTeaser() {
         <Reveal>
           <p className="mb-4 text-sm font-black uppercase tracking-[0.28em] text-blue-300">What We Do</p>
           <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black leading-[1.05] tracking-[-0.04em]">
-            A 2‑in‑1 business model.
+            Skills training and a business opportunity.
           </h2>
           <p className="mx-auto mt-6 max-w-3xl text-xl leading-9 text-[#D4DAE5]">
-            One side teaches you a high-income digital skill — so you can earn from what you learn.
-            The other side builds you a team-based business with real long-term income potential.
-            Both sides work together in one system.
+            The FHG programme combines digital-skills training for freelance work with a network-marketing business.
+            Get the current training format, session times, costs and membership requirements before deciding whether to join.
           </p>
         </Reveal>
 
@@ -820,66 +931,72 @@ function FloatingWhatsApp() {
 export default function App() {
   const [prospectState, setProspectState] = useState<ProspectState>(loadState);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [detailsShownCount, setDetailsShownCount] = useState(0);
-  const detailsPromptedRef = useRef(false);
-  const secondPromptRef = useRef(false);
-
-  // Check if banned
+  const [detailsRequired, setDetailsRequired] = useState(false);
+  const [submittingDetails, setSubmittingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState("");
+  const submissionInFlight = useRef(false);
   const isBanned = prospectState.banned;
 
-  // Track session
   useEffect(() => {
     const s = loadState();
     s.sessionCount += 1;
     saveState(s);
     setProspectState(s);
-    sendTelegram("page_visit", { sessionCount: s.sessionCount });
+    void sendTelegram("page_visit", { sessionCount: s.sessionCount });
   }, []);
 
-  // First details popup — after 5 seconds
-  useEffect(() => {
-    if (isBanned || prospectState.detailsSubmitted) return;
-    const timer = setTimeout(() => {
-      if (!detailsPromptedRef.current) {
-        detailsPromptedRef.current = true;
-        setDetailsOpen(true);
-        setDetailsShownCount(1);
-        sendTelegram("details_popup_shown", { which: "first_timed" });
-      }
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [isBanned, prospectState.detailsSubmitted]);
-
-  // Second details popup — when they scroll to the interest section
-  useEffect(() => {
-    if (isBanned || prospectState.detailsSubmitted || secondPromptRef.current) return;
-    const target = document.getElementById("interest");
-    if (!target) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !secondPromptRef.current && !loadState().detailsSubmitted) {
-        secondPromptRef.current = true;
-        setDetailsOpen(true);
-        setDetailsShownCount(2);
-        sendTelegram("details_popup_shown", { which: "second_scroll" });
-        obs.disconnect();
-      }
-    }, { threshold: 0.2 });
-    obs.observe(target);
-    return () => obs.disconnect();
-  }, [isBanned, prospectState.detailsSubmitted]);
-
-  const handleDetailsSubmit = useCallback((d: { name: string; whatsapp: string; location: string; role: string }) => {
-    const s = { ...prospectState, detailsSubmitted: true, details: d };
-    saveState(s);
-    setProspectState(s);
+  const handleDetailsClose = useCallback(() => {
+    if (submissionInFlight.current) return;
     setDetailsOpen(false);
-    sendTelegram("details_submitted", { details: d, collectedBy: detailsShownCount === 1 ? "first_popup" : detailsShownCount === 2 ? "second_popup" : "gateway_required" });
-  }, [prospectState, detailsShownCount]);
+    setDetailsError("");
+  }, []);
+
+  const handleClassDetailsRequest = useCallback(() => {
+    if (prospectState.detailsSubmitted && prospectState.details) {
+      void sendTelegram("proceeding_to_whatsapp", { details: prospectState.details }, { keepalive: true });
+      window.location.href = buildWhatsAppLink(prospectState.details);
+      return;
+    }
+    setDetailsRequired(false);
+    setDetailsError("");
+    setDetailsOpen(true);
+    void sendTelegram("details_popup_shown", { which: "requested_class_details" });
+  }, [prospectState]);
+
+  const handleDetailsSubmit = useCallback(async (details: ProspectDetails) => {
+    if (submissionInFlight.current) return;
+    submissionInFlight.current = true;
+    setSubmittingDetails(true);
+    setDetailsError("");
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
+    try {
+      const saved = await sendTelegram("details_submitted", {
+        details,
+        collectedBy: detailsRequired ? "gateway_required" : "requested_class_details",
+      }, { signal: controller.signal });
+      if (!saved) {
+        setDetailsError("We couldn't save your details. Check your connection and try again.");
+        return;
+      }
+      const next = { ...prospectState, detailsSubmitted: true, details };
+      saveState(next);
+      setProspectState(next);
+      setDetailsOpen(false);
+      void sendTelegram("proceeding_to_whatsapp", { details }, { keepalive: true });
+      window.location.href = buildWhatsAppLink(details);
+    } finally {
+      window.clearTimeout(timeout);
+      submissionInFlight.current = false;
+      setSubmittingDetails(false);
+    }
+  }, [prospectState, detailsRequired]);
 
   const handleDetailsNeeded = useCallback(() => {
-    setDetailsShownCount(3);
+    setDetailsRequired(true);
+    setDetailsError("");
     setDetailsOpen(true);
-    sendTelegram("details_popup_shown", { which: "gateway_required" });
+    void sendTelegram("details_popup_shown", { which: "gateway_required" });
   }, []);
 
   const structuredData = useMemo(() => ({
@@ -903,7 +1020,7 @@ export default function App() {
       <ScrollProgress />
       <Navbar />
       <main>
-        <Hero />
+        <Hero onRequestDetails={handleClassDetailsRequest} />
         <Story />
         <YourTurn />
         <OfferTeaser />
@@ -911,7 +1028,7 @@ export default function App() {
       </main>
       <Footer />
       <FloatingWhatsApp />
-      <DetailsModal open={detailsOpen} onClose={() => setDetailsOpen(false)} onSubmit={handleDetailsSubmit} canSkip={detailsShownCount < 3} />
+      <DetailsModal open={detailsOpen} onClose={handleDetailsClose} onSubmit={handleDetailsSubmit} canSkip={!detailsRequired} submitting={submittingDetails} error={detailsError} />
     </div>
   );
 }
