@@ -35,7 +35,7 @@ async function mockServices(page, failSubmission) {
 }
 
 async function openForm(page) {
-  await page.getByRole("button", { name: "Get the class details", exact: true }).click();
+  await page.getByRole("button", { name: "Get the full details", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
 }
 
@@ -172,7 +172,7 @@ test("preserves the rejection block across reloads", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "No problem at all.", exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "No problem at all.", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Get the class details", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Get the full details", exact: true })).toHaveCount(0);
   const saved = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), storeKey);
   expect(saved.banned).toBe(true);
   expect(saved.choiceLocked).toBe("never-heard");

@@ -26,7 +26,7 @@ const WHATSAPP_NUMBER = "2349160956794";
 const TELEGRAM_ENDPOINT = "https://macho-notify.olalekanayomide475.workers.dev/notify";
 
 function buildWhatsAppLink(details?: ProspectDetails) {
-  const intro = "Hi Macho, I'd like the details of Macho Team's digital-skills training and business programme.";
+  const intro = "Hi Macho, I'd like a full introduction to the Macho Team business opportunity.";
   if (!details) return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(intro)}`;
   const locationLines = details.state && details.lga && details.exactLocation
     ? `State: ${details.state}\nLGA / area council: ${details.lga}\nExact location: ${details.exactLocation}`
@@ -340,9 +340,9 @@ function DetailsModal({ open, onClose, onSubmit, canSkip = true, submitting, err
             <Icon name="close" className="h-5 w-5" />
           </button>
         )}
-        <h3 id="details-title" className="pr-10 text-2xl font-black tracking-tight text-white">Get the class details</h3>
+        <h3 id="details-title" className="pr-10 text-2xl font-black tracking-tight text-white">Get the full details</h3>
         <p id="details-description" className="mt-2 text-base leading-7 text-[#A7B0C0]">
-          Tell Muhammed where you are based and whether you are a student. Your details will be saved so he can contact you about the programme.
+          Tell Muhammed where you are based and whether you are a student. Your details will be saved so he can contact you and invite you to hear the full business explanation.
         </p>
         <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">Next, WhatsApp opens with your details filled in. Tap Send there to start the conversation.</p>
 
@@ -439,15 +439,15 @@ function Hero({ onRequestDetails }: { onRequestDetails: () => void }) {
           <Logo size="large" className="gold-glow mx-auto mb-8" />
           <p className="mb-3 text-sm font-black uppercase tracking-[0.28em] text-[#F4C542]/90">Macho Team</p>
           <h1 className="mx-auto max-w-5xl text-[clamp(2.2rem,6vw,4.5rem)] font-black leading-[0.92] tracking-[-0.05em]">
-            Learn digital skills.<br />
-            <span className="text-[#F4C542]">Explore the Macho Team programme.</span>
+            A business opportunity.<br />
+            <span className="text-[#F4C542]">Could it be right for you?</span>
           </h1>
           <p className="mx-auto mt-8 max-w-2xl text-xl leading-9 text-[#D4DAE5]">
-            Find out about website design, graphic design, video and AI tools. Our FHG programme combines freelance-skills training with a network-marketing business.
+            Whether you are studying, working or running a business, hear about an opportunity you can consider alongside what you already do.
           </p>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#A7B0C0]">Ask about current session times, online or physical attendance, costs and membership requirements before you decide.</p>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#A7B0C0]">Request the full explanation of how the business works, the costs, requirements and time involved before you decide.</p>
           <button type="button" onClick={onRequestDetails} className="mx-auto mt-8 inline-flex min-h-14 items-center justify-center rounded-2xl bg-[#F4C542] px-7 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:bg-[#ffd866]">
-            Get the class details
+            Get the full details
           </button>
         </Reveal>
 
@@ -615,11 +615,11 @@ function OfferTeaser() {
         <Reveal>
           <p className="mb-4 text-sm font-black uppercase tracking-[0.28em] text-blue-300">What We Do</p>
           <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black leading-[1.05] tracking-[-0.04em]">
-            Skills training and a business opportunity.
+            A 2-in-1 business opportunity.
           </h2>
           <p className="mx-auto mt-6 max-w-3xl text-xl leading-9 text-[#D4DAE5]">
-            The FHG programme combines digital-skills training for freelance work with a network-marketing business.
-            Get the current training format, session times, costs and membership requirements before deciding whether to join.
+            The programme combines freelance work with an FHG network-marketing business.
+            Hear the full explanation of how both parts work, what you would do and the requirements before deciding whether to join.
           </p>
         </Reveal>
 
@@ -627,9 +627,9 @@ function OfferTeaser() {
           <Reveal delay={80} variant="left">
             <div className="h-full rounded-3xl border border-white/10 bg-[#0B1220] p-8 text-left transition hover:-translate-y-1 hover:border-blue-300/40 sm:p-10">
               <p className="mb-3 text-sm font-black uppercase tracking-[0.2em] text-blue-300">Side 1</p>
-              <h3 className="text-2xl font-black tracking-tight">Learn a digital skill</h3>
+              <h3 className="text-2xl font-black tracking-tight">Build a freelance business</h3>
               <p className="mt-4 text-lg leading-8 text-[#A7B0C0]">
-                Get trained in a real skill. Build your profile. Find clients. Get paid. Access the global market — not just Nigeria.
+                Develop skills you can offer as services. Learn how finding clients and running a freelance business works. The full introduction explains what getting started involves.
               </p>
             </div>
           </Reveal>
@@ -951,7 +951,7 @@ export default function App() {
     setDetailsError("");
   }, []);
 
-  const handleClassDetailsRequest = useCallback(() => {
+  const handleBusinessDetailsRequest = useCallback(() => {
     if (prospectState.detailsSubmitted && prospectState.details) {
       void sendTelegram("proceeding_to_whatsapp", { details: prospectState.details }, { keepalive: true });
       window.location.href = buildWhatsAppLink(prospectState.details);
@@ -960,7 +960,7 @@ export default function App() {
     setDetailsRequired(false);
     setDetailsError("");
     setDetailsOpen(true);
-    void sendTelegram("details_popup_shown", { which: "requested_class_details" });
+    void sendTelegram("details_popup_shown", { which: "requested_business_details" });
   }, [prospectState]);
 
   const handleDetailsSubmit = useCallback(async (details: ProspectDetails) => {
@@ -973,7 +973,7 @@ export default function App() {
     try {
       const saved = await sendTelegram("details_submitted", {
         details,
-        collectedBy: detailsRequired ? "gateway_required" : "requested_class_details",
+        collectedBy: detailsRequired ? "gateway_required" : "requested_business_details",
       }, { signal: controller.signal });
       if (!saved) {
         setDetailsError("We couldn't save your details. Check your connection and try again.");
@@ -1020,7 +1020,7 @@ export default function App() {
       <ScrollProgress />
       <Navbar />
       <main>
-        <Hero onRequestDetails={handleClassDetailsRequest} />
+        <Hero onRequestDetails={handleBusinessDetailsRequest} />
         <Story />
         <YourTurn />
         <OfferTeaser />
