@@ -143,17 +143,15 @@ function getDeviceId(): string {
 
 function cn(...c: Array<string | false | null | undefined>) { return c.filter(Boolean).join(" "); }
 
-// Logo: put your Macho Team logo at public/macho-team-logo.png (or .svg)
-// If still using the old logo, keep the old filename below
+// Shared logo asset for the header, hero, footer and existing member screens.
 const LOGO_PATH = "/macho-team-logo.png";
 
 function Logo({ size = "default", className = "" }: { size?: "small" | "default" | "large"; className?: string }) {
   return (
-    <img src={LOGO_PATH} alt="Macho Team logo"
-      className={cn("shrink-0 rounded-xl bg-white object-contain ring-1 ring-white/15",
-        size === "small" && "h-10 w-10 p-1", size === "default" && "h-12 w-12 p-1.5", size === "large" && "h-20 w-20 p-2.5", className)}
-      width={size === "large" ? 80 : size === "small" ? 40 : 48}
-      height={size === "large" ? 80 : size === "small" ? 40 : 48} loading="eager" />
+    <img src={LOGO_PATH} alt="Macho Team — Join the hustle, live the dream"
+      className={cn("h-auto shrink-0 rounded-xl bg-white object-contain ring-1 ring-white/15",
+        size === "small" && "w-14 p-0.5", size === "default" && "w-20 p-1", size === "large" && "w-40 p-1.5 sm:w-56 sm:p-2", className)}
+      width={1312} height={1199} loading="eager" />
   );
 }
 
