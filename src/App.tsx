@@ -344,6 +344,7 @@ function DetailsModal({ open, onClose, onSubmit, canSkip = true, submitting, err
         <p id="details-description" className="mt-2 text-base leading-7 text-[#A7B0C0]">
           Tell Muhammed where you are based and whether you are a student. Your details will be saved so he can contact you and invite you to hear the full business explanation.
         </p>
+        <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">Physical attendance is required. We will confirm an available location and meeting time with you.</p>
         <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">Next, WhatsApp opens with your details filled in. Tap Send there to start the conversation.</p>
 
         <fieldset disabled={submitting} className="mt-6 space-y-4">
@@ -443,9 +444,12 @@ function Hero({ onRequestDetails }: { onRequestDetails: () => void }) {
             <span className="text-[#F4C542]">Could it be right for you?</span>
           </h1>
           <p className="mx-auto mt-8 max-w-2xl text-xl leading-9 text-[#D4DAE5]">
-            Whether you are studying, working or running a business, hear about an opportunity you can consider alongside what you already do.
+            Whether you are studying, working, running a business or exploring an opportunity for your children, hear about a business you can consider alongside your current responsibilities.
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#A7B0C0]">Request the full explanation of how the business works, the costs, requirements and time involved before you decide.</p>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#D4DAE5]">
+            <strong className="text-[#F4C542]">Physical attendance is required.</strong> Share your location so we can confirm an available office near you.
+          </p>
           <button type="button" onClick={onRequestDetails} className="mx-auto mt-8 inline-flex min-h-14 items-center justify-center rounded-2xl bg-[#F4C542] px-7 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:bg-[#ffd866]">
             Get the full details
           </button>
@@ -536,6 +540,14 @@ const ROLE_CONTENT: Record<string, { title: string; lines: string[] }> = {
       "This business gives you the chance to build something while you're still studying — so you graduate with more than just a certificate.",
     ],
   },
+  Parent: {
+    title: "You're thinking about your children's future",
+    lines: [
+      "If you are a parent, this could be something useful for your children to explore as they prepare for work and independence.",
+      "Request the full explanation first, then discuss it together. You can ask how the business works, what they would do and whether it fits their interests.",
+      "Ask about age requirements, any costs, the time involved and the physical location before deciding. Consider how participation would fit alongside their education or other responsibilities.",
+    ],
+  },
   Employee: {
     title: "You're working a job",
     lines: [
@@ -607,6 +619,51 @@ function YourTurn() {
 /* ══════════════════════════════════════════════════════════
    OFFER TEASER — 2-in-1 model
    ══════════════════════════════════════════════════════════ */
+
+function VisitInformation() {
+  return (
+    <section id="visiting" className="scroll-mt-20 bg-[#0B1220] px-6 py-24 text-white sm:px-10 lg:px-16">
+      <div className="mx-auto max-w-5xl">
+        <Reveal>
+          <p className="mb-4 text-sm font-black uppercase tracking-[0.28em] text-blue-300">Plan Your Visit</p>
+          <h2 className="max-w-3xl text-[clamp(1.8rem,4vw,3rem)] font-black leading-[1.05] tracking-[-0.04em]">
+            What to know before you visit.
+          </h2>
+          <p className="mt-5 max-w-3xl text-xl leading-9 text-[#D4DAE5]">
+            You may be exploring this for yourself or as a parent considering it for your children. Start with a conversation and ask the questions that matter to you.
+          </p>
+        </Reveal>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <Reveal delay={80}>
+            <div className="h-full rounded-3xl border border-white/10 bg-[#151E2E] p-7">
+              <h3 className="text-xl font-black tracking-tight">Physical attendance is required</h3>
+              <p className="mt-4 text-base leading-8 text-[#D4DAE5]">
+                Taking part requires you to attend in person. Confirm the office, meeting time and attendance expectations with Muhammed before making travel plans.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={160}>
+            <div className="h-full rounded-3xl border border-white/10 bg-[#151E2E] p-7">
+              <h3 className="text-xl font-black tracking-tight">Over 300 locations across Nigeria</h3>
+              <p className="mt-4 text-base leading-8 text-[#D4DAE5]">
+                Our network has over 300 locations across more than 12 states in Nigeria. Share your state, LGA and exact area so we can check the closest available location.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={240}>
+            <div className="h-full rounded-3xl border border-white/10 bg-[#151E2E] p-7">
+              <h3 className="text-xl font-black tracking-tight">Understand the commitment</h3>
+              <p className="mt-4 text-base leading-8 text-[#D4DAE5]">
+                Ask about the work, any costs, eligibility and time involved. Hear the full explanation and decide whether it fits your situation. Submitting your details is a request for information, not enrolment.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function OfferTeaser() {
   return (
@@ -1024,6 +1081,7 @@ export default function App() {
         <Story />
         <YourTurn />
         <OfferTeaser />
+        <VisitInformation />
         <InterestGateway state={prospectState} setState={setProspectState} onDetailsNeeded={handleDetailsNeeded} />
       </main>
       <Footer />
