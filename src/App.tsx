@@ -344,7 +344,7 @@ function DetailsModal({ open, onClose, onSubmit, canSkip = true, submitting, err
         <p id="details-description" className="mt-2 text-base leading-7 text-[#A7B0C0]">
           Tell Muhammed where you are based and whether you are a student. Your details will be saved so he can contact you and invite you to hear the full business explanation.
         </p>
-        <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">Physical attendance is required. We will confirm an available location and meeting time with you.</p>
+        <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">You must be 18 or older (18+) to participate. Physical attendance is required. We will confirm an available location and meeting time with you.</p>
         <p className="mt-2 text-sm leading-6 text-[#D4DAE5]">Next, WhatsApp opens with your details filled in. Tap Send there to start the conversation.</p>
 
         <fieldset disabled={submitting} className="mt-6 space-y-4">
@@ -448,7 +448,7 @@ function Hero({ onRequestDetails }: { onRequestDetails: () => void }) {
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#A7B0C0]">Request the full explanation of how the business works, the costs, requirements and time involved before you decide.</p>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#D4DAE5]">
-            <strong className="text-[#F4C542]">Physical attendance is required.</strong> Share your location so we can confirm an available office near you.
+            <strong className="text-[#F4C542]">Age requirement: 18+ only.</strong> Physical attendance is required. Share your location so we can confirm an available office near you.
           </p>
           <button type="button" onClick={onRequestDetails} className="mx-auto mt-8 inline-flex min-h-14 items-center justify-center rounded-2xl bg-[#F4C542] px-7 py-4 text-sm font-black uppercase tracking-widest text-[#0B1220] transition hover:bg-[#ffd866]">
             Get the full details
@@ -515,10 +515,6 @@ function Story() {
               I saw a system where <strong className="text-white">my work input determines my income output.</strong> I could structure how much I wanted to earn.
               I could build skills that people pay real money for. And I could build a business alongside it.
             </p>
-            <p>
-              Today, I have over 5 digital skills — website design, app development, graphic design, AI automation, and more.
-              I earn from my skills. I build with a team. And I can see a real path forward.
-            </p>
           </div>
         </Reveal>
       </div>
@@ -545,7 +541,7 @@ const ROLE_CONTENT: Record<string, { title: string; lines: string[] }> = {
     lines: [
       "If you are a parent, this could be something useful for your children to explore as they prepare for work and independence.",
       "Request the full explanation first, then discuss it together. You can ask how the business works, what they would do and whether it fits their interests.",
-      "Ask about age requirements, any costs, the time involved and the physical location before deciding. Consider how participation would fit alongside their education or other responsibilities.",
+      "Participation is for adults aged 18 and above (18+) only. Ask about any costs, the time involved and the physical location before deciding. Consider how participation would fit alongside their education or other responsibilities.",
     ],
   },
   Employee: {
