@@ -144,14 +144,14 @@ function getDeviceId(): string {
 function cn(...c: Array<string | false | null | undefined>) { return c.filter(Boolean).join(" "); }
 
 // Shared logo asset for the header, hero, footer and existing member screens.
-const LOGO_PATH = "/macho-team-logo.png";
+const LOGO_PATH = "/macho-team-blue-v2.webp";
 
 function Logo({ size = "default", className = "" }: { size?: "small" | "default" | "large"; className?: string }) {
   return (
     <img src={LOGO_PATH} alt="Macho Team — Join the hustle, live the dream"
       className={cn("h-auto shrink-0 rounded-xl bg-white object-contain ring-1 ring-white/15",
         size === "small" && "w-14 p-0.5", size === "default" && "w-20 p-1", size === "large" && "w-40 p-1.5 sm:w-56 sm:p-2", className)}
-      width={1312} height={1199} loading="eager" />
+      width={1024} height={936} loading="eager" />
   );
 }
 
